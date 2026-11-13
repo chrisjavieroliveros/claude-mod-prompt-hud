@@ -1,0 +1,6 @@
+{
+  "name": "prompt-hud",
+  "version": "0.2.0",
+  "description": "One slim row above the prompt: CTX, 20 boxes over a 400k-token scale with the tokens used.",
+  "types": "./types/index.d.ts"
+}

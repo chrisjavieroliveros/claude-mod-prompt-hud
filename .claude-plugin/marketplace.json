@@ -1,0 +1,5 @@
+{
+  "name": "claude-mod-prompt-hud",
+  "owner": { "name": "chrisjavieroliveros" },
+  "plugins": [{ "name": "prompt-hud", "source": "./" }]
+}
