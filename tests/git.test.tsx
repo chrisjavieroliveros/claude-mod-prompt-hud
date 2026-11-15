@@ -62,7 +62,7 @@ test('GIT row starts closed, a press opens the lists and closes them again', asy
   const svgAlt = async (ui: any, re: RegExp) =>
     (await ui.findAll({ type: 'Svg' })).some((el: any) => re.test(String(el.props?.alt ?? '')))
 
-  // Desktop: GIT label in CTX's column, the rest 8 px SVG.
+  // Desktop: GIT label in CTX's column, the rest 10 px SVG.
   let ui = await $.ui.mount(BAND('desktop'))
   expect(await ui.find({ type: 'Text', text: /^GIT$/ })).toBeDefined()
   expect(await svgAlt(ui, /main: 4 staged, 3 changes/)).toBe(true)

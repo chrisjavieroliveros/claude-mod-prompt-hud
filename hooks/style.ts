@@ -14,11 +14,11 @@ export const LABEL_CELLS = 4
 /** Desktop: the content column's width in px (CTX's boxes plus its figure), the divider spans it. */
 export const CONTENT_W = 236
 
-/** The 8 px HUD type, as the SVGs draw it. */
+/** The 10 px HUD type, as the SVGs draw it. */
 export const FONT = `ui-monospace, SFMono-Regular, Menlo, Consolas, monospace`
-export const FONT_PX = 8
-/** One monospace character at 8 px. */
-export const CHAR_W = 4.82
+export const FONT_PX = 10
+/** One monospace character at 10 px. */
+export const CHAR_W = 6.02
 
 export const esc = (s: string) =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')

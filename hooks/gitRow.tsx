@@ -18,7 +18,7 @@ import {
 
 export { registerGit } from './git'
 
-// The GIT row, above CTX, in the same grid: the label column, then 8 px type drawn as SVG
+// The GIT row, above CTX, in the same grid: the label column, then 10 px type drawn as SVG
 // (as CTX draws its boxes), then a chevron that opens the lists:
 //   GIT  main · 14 staged · 2 changes  ▸
 //        STAGED 14
@@ -29,10 +29,10 @@ export { registerGit } from './git'
 /** Most rows one list shows before "+N more" (the band scrolls past its own height anyway). */
 export const LIST_MAX = 40
 
-const ROW_H = 11
-const HEAD_H = 12
-const BASE = 8 // baseline in a row
-const CODE_W = 9 // the status letter's column, px
+const ROW_H = 14
+const HEAD_H = 14
+const BASE = 10 // baseline in a row
+const CODE_W = 11 // the status letter's column, px
 /** The divider: label column (~36 px) + gap + content column, faded at both ends. */
 const LINE_W = 44 + CONTENT_W
 
@@ -67,7 +67,7 @@ const svgOpen = (w: number, h: number) =>
   `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" ` +
   `font-family="${FONT}" font-size="${FONT_PX}">`
 
-/** The summary line at 8 px: branch bright, figures bright, words grey. */
+/** The summary line at 10 px: branch bright, figures bright, words grey. */
 function headerSvg(git: GitStatus): { source: string; width: number } {
   const branch = cutEnd(git.branch || 'HEAD', 24)
   const c = counts(git)
@@ -93,7 +93,7 @@ function headerSvg(git: GitStatus): { source: string; width: number } {
   }
 }
 
-/** Both lists at 8 px, in the content column; empty lists are left out. */
+/** Both lists at 10 px, in the content column; empty lists are left out. */
 function listSvg(git: GitStatus): { source: string; height: number } {
   const maxChars = Math.floor((CONTENT_W - CODE_W) / CHAR_W)
   const out: string[] = []
@@ -187,7 +187,7 @@ export async function gitRows($: EngineInterface, e: RenderEvent) {
           </Box>
           {c !== null ? (
             <Button key="git-toggle" plain dimColor onPress={() => void toggleGit($)}>
-              <Text size="caption" color={LABEL}>
+              <Text size="footnote" color={LABEL}>
                 {chevron}
               </Text>
             </Button>

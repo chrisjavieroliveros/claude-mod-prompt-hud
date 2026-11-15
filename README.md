@@ -7,7 +7,7 @@ Above the prompt:
     CTX  ■■■■■■■■■■■□□□□□□□□□  213k
 
 **GIT** (in a git repo, from the start of the session): the branch and how many changes are
-staged and in the working tree, in 8 px type drawn as SVG in the same grid as CTX (label
+staged and in the working tree, in 10 px type drawn as SVG in the same grid as CTX (label
 column, then content), with a faint hairline between the two rows. Press the chevron to open the
 same lists as the editor's Source Control view (STAGED / CHANGES, a coloured M A D R U letter, the
 file name, its folder dim and cut from the start; empty lists left out); press again to close it. `git status` is read every 3 s and right after each tool
