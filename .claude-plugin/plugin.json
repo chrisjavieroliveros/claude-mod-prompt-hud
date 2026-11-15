@@ -1,6 +1,6 @@
 {
   "name": "prompt-hud",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Above the prompt: a GIT row that opens into the live list of changes, and CTX, 20 boxes over a 400k-token scale.",
   "types": "./types/index.d.ts"
 }

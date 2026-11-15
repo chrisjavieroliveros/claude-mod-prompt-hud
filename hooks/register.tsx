@@ -1,17 +1,15 @@
 import type { Register } from 'claude-code'
 
 import { currentFill, registerContext } from './context'
-import { gitRows, registerGit } from './gitRow'
+import { gitDivider, gitRows, registerGit } from './gitRow'
+import { FIGURE, LABEL, LABEL_CELLS, LABEL_W, SEG_EMPTY, SEG_EMPTY_EDGE } from './style'
 
-// One slim row above the prompt, once a reply has landed:
+// Slim rows above the prompt: GIT (in a repo), a hairline, then CTX once a reply has landed:
+//   GIT  main · 14 staged · 2 changes  ▸
+//   ───────────────────────────────────
 //   CTX  ■■■■■■■■■■■□□□□□□□□□  213k
 // 20 boxes over a fixed 400k scale (not the model's window), coloured by tokens used; the only
 // figure is the tokens. Whatever band another mod beneath draws stays above it; a survey takes the band.
-
-const LABEL = '#8E949C'
-const FIGURE = '#F1F2F4'
-const SEG_EMPTY = '#1B1E23'
-const SEG_EMPTY_EDGE = '#262A31'
 
 /** The boxes' full scale, in tokens: 20 lit boxes = 400k, whatever the model's window. */
 export const SCALE = 400_000
@@ -25,8 +23,6 @@ const BAR_W = SEGMENTS * (SEG_W + SEG_GAP) - SEG_GAP
 const PAD = 2 // room for the glow
 const SVG_W = BAR_W + PAD * 2
 const SVG_H = BAR_H + PAD * 2
-const LABEL_W = 4 // desktop, in cells (a Box width is cells, ~9 px each)
-const LABEL_CELLS = 4 // terminal
 
 /** Healthy up to 200k, filling up past 200k, high past 250k, critical past 330k. */
 export const levelFor = (tokens: number) =>
@@ -66,7 +62,7 @@ export const register: Register = on => {
 
     if (f === null) {
       row = null
-    } else if ('Svg' in ui) {
+    } else if (e.surface !== 'terminal' && 'Svg' in ui) {
       const level = levelFor(f.tokens)
       const Svg = ui.Svg
       row = (
@@ -112,6 +108,7 @@ export const register: Register = on => {
         {below}
         <Box flexDirection="column" paddingX="sm" gap={0}>
           {git}
+          {git !== null && row !== null ? gitDivider($, e) : null}
           {row}
         </Box>
       </Box>

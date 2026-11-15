@@ -1,6 +1,7 @@
 import { expect, test } from 'claude-code/testing'
 
 import { parseStatus } from '../hooks/git'
+import { svgs } from '../hooks/gitRow'
 
 type TestOn = Parameters<Extract<Parameters<typeof test>[1], (...args: never[]) => unknown>>[1]
 
@@ -58,26 +59,38 @@ test('GIT row starts closed, a press opens the lists and closes them again', asy
   stubs(on)
   await start($)
 
-  for (const surface of ['desktop', 'terminal'] as const) {
-    const ui = await $.ui.mount(BAND(surface))
-    expect(await ui.find({ type: 'Text', text: /^GIT$/ })).toBeDefined()
-    expect(await ui.find({ type: 'Text', text: /4 staged/ })).toBeDefined()
-    expect(await ui.find({ type: 'Text', text: /STAGED CHANGES/ })).toBeUndefined()
+  const svgAlt = async (ui: any, re: RegExp) =>
+    (await ui.findAll({ type: 'Svg' })).some((el: any) => re.test(String(el.props?.alt ?? '')))
 
-    await ui.press({ key: 'git-toggle' })
-    expect(await ui.find({ type: 'Text', text: /STAGED CHANGES/ })).toBeDefined()
-    expect(await ui.find({ type: 'Text', text: /DawntidePlains\.unity/ })).toBeDefined()
+  // Desktop: GIT label in CTX's column, the rest 8 px SVG.
+  let ui = await $.ui.mount(BAND('desktop'))
+  expect(await ui.find({ type: 'Text', text: /^GIT$/ })).toBeDefined()
+  expect(await svgAlt(ui, /main: 4 staged, 3 changes/)).toBe(true)
+  expect(await svgAlt(ui, /Git changes/)).toBe(false)
+  await ui.press({ key: 'git-toggle' })
+  expect(await svgAlt(ui, /Git changes/)).toBe(true)
+  await ui.press({ key: 'git-toggle' })
+  expect(await svgAlt(ui, /Git changes/)).toBe(false)
+  await ui.unmount()
 
-    await ui.press({ key: 'git-toggle' })
-    expect(await ui.find({ type: 'Text', text: /STAGED CHANGES/ })).toBeUndefined()
-    await ui.unmount()
-  }
+  // Terminal: the same in cells.
+  ui = await $.ui.mount(BAND('terminal'))
+  expect(await ui.find({ type: 'Text', text: /^GIT\s*$/ })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /4 staged/ })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /^STAGED$/ })).toBeUndefined()
+  await ui.press({ key: 'git-toggle' })
+  expect(await ui.find({ type: 'Text', text: /^STAGED$/ })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /DawntidePlains\.unity/ })).toBeDefined()
+  await ui.press({ key: 'git-toggle' })
+  expect(await ui.find({ type: 'Text', text: /^STAGED$/ })).toBeUndefined()
+  await ui.unmount()
 
   // A clean tree after a commit.
   out = '## main\0'
   await start($)
-  const ui = await $.ui.mount(BAND('desktop'))
-  expect(await ui.find({ type: 'Text', text: /clean/ })).toBeDefined()
+  ui = await $.ui.mount(BAND('desktop'))
+  expect(await svgAlt(ui, /clean/)).toBe(true)
+  expect(await ui.find({ key: 'git-toggle' })).toBeUndefined()
   await ui.unmount()
 })
 
@@ -88,4 +101,14 @@ test('outside a git repo there is no GIT row', async ($, on) => {
   const ui = await $.ui.mount(BAND('desktop'))
   expect(await ui.find({ type: 'Text', text: /GIT/ })).toBeUndefined()
   await ui.unmount()
+})
+
+test('the list SVG truncates long paths from the start and skips empty lists', () => {
+  const { listSvg } = svgs
+  const out = listSvg(parseStatus(STATUS)).source
+  expect(out).toContain('STAGED')
+  expect(out).toContain('DawntidePlains.unity')
+  expect(out).toContain('…')
+  const clean = listSvg({ branch: 'main', staged: [{ path: 'a.cs', code: 'M' }], changes: [] }).source
+  expect(clean).not.toContain('CHANGES')
 })
