@@ -1,6 +1,7 @@
 import type { Register } from 'claude-code'
 
 import { currentFill, registerContext } from './context'
+import { gitRows, registerGit } from './gitRow'
 
 // One slim row above the prompt, once a reply has landed:
 //   CTX  ■■■■■■■■■■■□□□□□□□□□  213k
@@ -49,20 +50,24 @@ const share = (tokens: number) => Math.max(0, Math.min(1, tokens / SCALE))
 
 export const register: Register = on => {
   registerContext(on)
+  registerGit(on)
 
   on('ui.render', { component: 'AbovePrompt' }, async ($, e, next) => {
     if (e.props.hasSurvey) return next(e)
     const f = await currentFill($)
-    if (f === null) return next(e)
+    const git = await gitRows($, e)
+    if (f === null && git === null) return next(e)
 
-    // Whatever the mods beneath draw stays on top; this row sits closest to the prompt.
+    // Whatever the mods beneath draw stays on top; these rows sit closest to the prompt.
     const below = await next(e)
     const ui = $.ui.resolve(e)
     const { Box, Text } = ui
-    const level = levelFor(f.tokens)
     let row
 
-    if ('Svg' in ui) {
+    if (f === null) {
+      row = null
+    } else if ('Svg' in ui) {
+      const level = levelFor(f.tokens)
       const Svg = ui.Svg
       row = (
         <Box flexDirection="row" alignItems="center" gap="md">
@@ -86,6 +91,7 @@ export const register: Register = on => {
       )
     } else {
       // Terminal: the same row in cells.
+      const level = levelFor(f.tokens)
       const lit = Math.round(share(f.tokens) * SEGMENTS)
       row = (
         <Box flexDirection="row" gap={1}>
@@ -104,7 +110,8 @@ export const register: Register = on => {
     return (
       <Box flexDirection="column" gap={0}>
         {below}
-        <Box flexDirection="column" paddingX="sm">
+        <Box flexDirection="column" paddingX="sm" gap={0}>
+          {git}
           {row}
         </Box>
       </Box>
