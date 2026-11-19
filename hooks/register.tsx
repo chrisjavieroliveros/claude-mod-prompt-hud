@@ -1,5 +1,6 @@
 import type { Register } from 'claude-code'
 
+import { AVATAR_PX, avatarSvg, lookFor } from './avatar'
 import { currentFill, registerContext } from './context'
 import { gitDivider, gitRows, registerGit } from './gitRow'
 import { FIGURE, LABEL, LABEL_CELLS, LABEL_W, SEG_EMPTY, SEG_EMPTY_EDGE } from './style'
@@ -103,13 +104,38 @@ export const register: Register = on => {
       )
     }
 
+    // The model's avatar on the left of the CTX row only; GIT and the hairline stay at the left edge.
+    const look = row === null ? null : lookFor(await $.session.model().catch(() => ''))
+    let avatar = null
+    if (look !== null && e.surface !== 'terminal' && 'Svg' in ui) {
+      const Svg = ui.Svg
+      avatar = (
+        <Box flexShrink={0}>
+          <Svg source={avatarSvg(look)} width={AVATAR_PX} height={AVATAR_PX} alt={`${look.name} avatar`} />
+        </Box>
+      )
+    } else if (look !== null) {
+      avatar = (
+        <Text bold color={look.color}>
+          {look.letter}
+        </Text>
+      )
+    }
+
     return (
       <Box flexDirection="column" gap={0}>
         {below}
         <Box flexDirection="column" paddingX="sm" gap={0}>
           {git}
           {git !== null && row !== null ? gitDivider($, e) : null}
-          {row}
+          {avatar === null ? (
+            row
+          ) : (
+            <Box flexDirection="row" alignItems="center" gap={e.surface === 'terminal' ? 1 : 'sm'}>
+              {avatar}
+              {row}
+            </Box>
+          )}
         </Box>
       </Box>
     )

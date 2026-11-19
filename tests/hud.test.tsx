@@ -1,5 +1,6 @@
 import { expect, test } from 'claude-code/testing'
 
+import { avatarSvg, lookFor } from '../hooks/avatar'
 import { levelFor, short } from '../hooks/register'
 
 const BAND = (surface: 'desktop' | 'terminal', hasSurvey = false) =>
@@ -30,6 +31,7 @@ type TestOn = Parameters<Extract<Parameters<typeof test>[1], (...args: never[]) 
 const engine = (on: TestOn) => {
   on('session.measure', (_, e) => ({ changed: e.changed }))
   on('session.usage', () => ({ value: { startedAt: 0, context: { window: 1_000_000 }, rateLimits: [] } }))
+  on('session.model', () => ({ value: 'claude-opus-5-5' }))
   // Another band beneath (split-watch) stays drawn above the row.
   on('ui.render', ($, e) => {
     const { Text } = $.ui.resolve(e)
@@ -61,6 +63,28 @@ test('nothing before the first reply, and a survey takes the band', async ($, on
   ui = await $.ui.mount(BAND('desktop', true))
   expect(await ui.find({ type: 'Text', text: /CTX/ })).toBeUndefined()
   await ui.unmount()
+})
+
+test('model avatar beside CTX: a 20 px monogram tile on desktop, the letter on the terminal', async ($, on) => {
+  engine(on)
+  await $.session.measure(measure(120_000))
+  let ui = await $.ui.mount(BAND('desktop'))
+  const tile = (await ui.findAll({ type: 'Svg' })).find((el: any) => /avatar/.test(String(el.props?.alt ?? ''))) as any
+  expect(tile?.props?.alt).toBe('Opus avatar')
+  expect(tile?.props?.width).toBe(20)
+  await ui.unmount()
+  ui = await $.ui.mount(BAND('terminal'))
+  expect(await ui.find({ type: 'Text', text: /^O$/ })).toBeDefined()
+  await ui.unmount()
+})
+
+test('model avatar: the monogram for the four models, none for others', () => {
+  expect(['claude-haiku-5-5', 'Sonnet 5.5', 'opus[1m]', 'claude-fable-5-2', 'gpt-x'].map(m => lookFor(m)?.letter ?? null)).toEqual(
+    ['H', 'S', 'O', 'F', null],
+  )
+  const svg = avatarSvg(lookFor('opus')!)
+  expect(svg).toMatch(/width="20" height="20"/)
+  expect(svg.match(/<rect /g)?.length).toBe(50) // tile + 7×7 cells
 })
 
 test('levels by tokens on the 400k scale, and short figures', () => {
